@@ -30,11 +30,7 @@
       <label>
         問題数:
         <input id="count" type="number" min="5" max="80" value="20" />
-      </label>
-      <label>
-        制限時間(分・模擬のみ):
-        <input id="minutes" type="number" min="10" max="90" value="60" />
-      </label>
+
       <button id="startBtn">開始</button>
       <button id="resetBtn">リセット</button>
     </div>
@@ -53,11 +49,10 @@
   <footer class="container footer">
     <button id="submitBtn" class="hidden">採点</button>
     <button id="retryIncorrectBtn" class="hidden">不正解のみ再挑戦</button>
-    <button id="exportBookmarksBtn">ブックマーク書き出し</button>
-    <input id="importBookmarksFile" type="file" accept="application/json" hidden />
-    <button id="importBookmarksBtn">ブックマーク読み込み</button>
+
   </footer>
 
   <script src="app.js" defer></script>
 </body>
 </html>
+
