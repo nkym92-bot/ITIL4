@@ -5,6 +5,7 @@ let mode = "practice";
 let filteredQuestions = [];
 let timerInterval = null;
 let timeLeft = 0;
+let elapsed = 0;
 
 // HTML要素
 const startBtn = document.getElementById("startBtn");
@@ -24,12 +25,10 @@ const scoreDisplay = document.getElementById("score");
 // JSON読込
 fetch("data/questions.json")
   .then((res) => res.json())
-  .then((data) => {
-    questions = data;
-  })
+  .then((data) => (questions = data))
   .catch((err) => console.error("問題データの読み込みに失敗:", err));
 
-// クイズ開始
+// 開始ボタン
 startBtn.addEventListener("click", () => {
   mode = modeSelect.value;
   const domain = domainSelect.value;
@@ -42,6 +41,7 @@ startBtn.addEventListener("click", () => {
   filteredQuestions = filteredQuestions.slice(0, count);
   currentIndex = 0;
   selectedAnswers = {};
+  elapsed = 0;
   showQuestion();
 
   quizArea.classList.remove("hidden");
@@ -53,13 +53,15 @@ startBtn.addEventListener("click", () => {
   if (mode === "exam") startTimer();
 });
 
-// タイマー開始（模擬試験モード用）
+// タイマー（模擬試験モード）
 function startTimer() {
   clearInterval(timerInterval);
   timeLeft = parseInt(minutesInput.value) * 60;
+  elapsed = 0;
   updateTimerDisplay();
   timerInterval = setInterval(() => {
     timeLeft--;
+    elapsed++;
     updateTimerDisplay();
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
@@ -118,33 +120,36 @@ function showQuestion() {
   });
 
   document.getElementById("prevBtn").onclick = prevQuestion;
-  document.getElementById("nextBtn").onclick = nextQuestion;
+  document.getElementById("nextBtn").onclick = () => {
+    saveSelection();
+    if (currentIndex < filteredQuestions.length - 1) {
+      currentIndex++;
+      showQuestion();
+    } else {
+      // 最後の問題 → 採点
+      gradeExam();
+    }
+  };
 }
 
+// 即時フィードバック
 function checkAnswer(q) {
   const selected = selectedAnswers[q.id];
   const correct = q.answerIndex;
+  const card = quizArea.querySelector(".question-card");
+
+  // 既存フィードバックを削除してから表示
+  const oldFeedback = card.querySelector(".feedback");
+  if (oldFeedback) oldFeedback.remove();
+
   const explanation = q.explanation ? `<p class="explanation">${q.explanation}</p>` : "";
   if (selected === correct) {
-    quizArea.querySelector(".question-card").insertAdjacentHTML(
-      "beforeend",
-      `<div class="feedback correct">正解！${explanation}</div>`
-    );
+    card.insertAdjacentHTML("beforeend", `<div class="feedback correct">✅ 正解！${explanation}</div>`);
   } else {
-    quizArea.querySelector(".question-card").insertAdjacentHTML(
+    card.insertAdjacentHTML(
       "beforeend",
-      `<div class="feedback incorrect">不正解。正解は「${q.choices[correct]}」${explanation}</div>`
+      `<div class="feedback incorrect">❌ 不正解。正解は「${q.choices[correct]}」${explanation}</div>`
     );
-  }
-}
-
-function nextQuestion() {
-  saveSelection();
-  if (currentIndex < filteredQuestions.length - 1) {
-    currentIndex++;
-    showQuestion();
-  } else if (mode === "exam") {
-    gradeExam();
   }
 }
 
@@ -177,29 +182,32 @@ function gradeExam() {
   });
 
   const score = Math.round((correctCount / total) * 100);
+  const minutesSpent = Math.floor(elapsed / 60);
+  const secondsSpent = elapsed % 60;
+
   scoreDisplay.textContent = `スコア: ${correctCount}/${total} (${score}%)`;
 
   reviewArea.innerHTML = `
-    <h2>結果一覧</h2>
-    <ul class="review-list">
-      ${filteredQuestions
-        .map((q) => {
-          const userAns = selectedAnswers[q.id];
-          const correct = q.answerIndex;
-          const correctText = q.choices[correct];
-          const isCorrect = userAns === correct;
-          return `
-            <li class="${isCorrect ? "correct" : "incorrect"}">
-              <p><strong>Q${q.id}:</strong> ${q.question}</p>
-              <p>あなたの回答: ${
-                userAns != null ? q.choices[userAns] : "未回答"
-              }</p>
-              <p>正解: ${correctText}</p>
-              <p class="explanation">${q.explanation || ""}</p>
-            </li>`;
-        })
-        .join("")}
-    </ul>
+    <h2>結果</h2>
+    <p>経過時間: ${minutesSpent}分${secondsSpent}秒</p>
+    <p>正答率: ${score}%</p>
+    ${
+      incorrectQuestions.length > 0
+        ? `<h3>不正解一覧 (${incorrectQuestions.length}問)</h3>
+           <ul class="review-list">
+             ${incorrectQuestions
+               .map(
+                 (q) => `
+                   <li class="incorrect">
+                     <p><strong>Q${q.id}:</strong> ${q.question}</p>
+                     <p>正解: ${q.choices[q.answerIndex]}</p>
+                     <p class="explanation">${q.explanation || ""}</p>
+                   </li>`
+               )
+               .join("")}
+           </ul>`
+        : `<p>全問正解！お見事です 🎉</p>`
+    }
   `;
 
   quizArea.classList.add("hidden");
@@ -209,11 +217,13 @@ function gradeExam() {
   retryIncorrectBtn.onclick = () => retryIncorrect(incorrectQuestions);
 }
 
+// 不正解のみ再挑戦
 function retryIncorrect(incorrectQuestions) {
   filteredQuestions = incorrectQuestions;
   shuffle(filteredQuestions);
   selectedAnswers = {};
   currentIndex = 0;
+  elapsed = 0;
   showQuestion();
   quizArea.classList.remove("hidden");
   reviewArea.classList.add("hidden");
@@ -231,6 +241,7 @@ resetBtn.addEventListener("click", () => {
   retryIncorrectBtn.classList.add("hidden");
   submitBtn.classList.add("hidden");
   timerDisplay.textContent = "";
+  elapsed = 0;
 });
 
 // ユーティリティ
