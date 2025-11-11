@@ -154,16 +154,6 @@ function renderQuiz() {
     const actions = document.createElement("div");
     actions.className = "actions";
 
-    const bmBtn = document.createElement("button");
-    bmBtn.className = "btn";
-    bmBtn.textContent = bookmarks.has(q.id) ? "★ ブックマーク中" : "☆ ブックマーク";
-    bmBtn.addEventListener("click", () => {
-      if (bookmarks.has(q.id)) { bookmarks.delete(q.id); }
-      else { bookmarks.add(q.id); }
-      saveBookmarks(bookmarks);
-      bmBtn.textContent = bookmarks.has(q.id) ? "★ ブックマーク中" : "☆ ブックマーク";
-    });
-
     const showBtn = document.createElement("button");
     showBtn.className = "btn";
     showBtn.textContent = "解説";
@@ -316,3 +306,4 @@ async function main() {
 main().catch(err => {
   alert("初期化エラー: " + err.message);
 });
+
