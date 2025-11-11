@@ -1,56 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ITIL4 トレーニングノート</title>
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- カスタムカラー設定 -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#2563eb', // 青
-            secondary: '#f3f4f6', // グレー背景
-          },
-        },
-      },
-    };
-  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ITIL4 Foundation 練習問題</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
-<body class="bg-secondary min-h-screen flex flex-col">
-  <!-- ヘッダー -->
-  <header class="bg-primary text-white text-center py-4 shadow-md">
-    <h1 class="text-2xl font-bold tracking-wide">ITIL4 トレーニングノート</h1>
+<body>
+  <header class="container">
+    <h1>ITIL4 Foundation 練習問題</h1>
+    <div class="controls">
+      <label>
+        モード:
+        <select id="mode">
+          <option value="practice">練習（即時フィードバック）</option>
+          <option value="exam">模擬（最後に採点）</option>
+        </select>
+      </label>
+      <label>
+        分野フィルタ:
+        <select id="domain">
+          <option value="all">すべて</option>
+          <option value="SVS">SVS/価値共創</option>
+          <option value="Practices">プラクティス</option>
+          <option value="SVC">サービス・バリューチェーン</option>
+          <option value="GuidingPrinciples">指針（GP）</option>
+        </select>
+      </label>
+      <label>
+        問題数:
+        <input id="count" type="number" min="5" max="80" value="20" />
+      </label>
+      <label>
+        制限時間(分・模擬のみ):
+        <input id="minutes" type="number" min="10" max="90" value="60" />
+      </label>
+      <button id="startBtn">開始</button>
+      <button id="resetBtn">リセット</button>
+    </div>
+    <div id="statusBar">
+      <span id="timer"></span>
+      <span id="progress"></span>
+      <span id="score"></span>
+    </div>
   </header>
 
-  <!-- メインコンテンツ -->
-  <main class="flex-1 p-4 sm:p-6">
-    <section class="bg-white rounded-2xl shadow-md p-5 max-w-xl mx-auto">
-      <h2 class="text-xl font-semibold text-primary mb-3">ようこそ 👋</h2>
-      <p class="text-gray-700 mb-4 leading-relaxed">
-        このサイトは ITIL4 の学習内容やまとめをスマホ・PCの両方で快適に閲覧できるように設計されています。
-      </p>
-
-      <div class="space-y-3">
-        <a href="./data/" class="block text-center bg-primary text-white py-2 rounded-lg hover:bg-blue-700 transition">
-          学習データを見る
-        </a>
-        <a href="https://nkym92-bot.github.io/" class="block text-center bg-gray-200 text-primary py-2 rounded-lg hover:bg-gray-300 transition">
-          ホームに戻る
-        </a>
-      </div>
-    </section>
+  <main class="container">
+    <div id="quizArea" class="hidden"></div>
+    <div id="reviewArea" class="hidden"></div>
   </main>
 
-  <!-- フッター -->
-  <footer class="bg-white border-t text-center text-gray-500 text-sm py-3">
-    © 2025 nkym92-bot | ITIL4 Training Notes
+  <footer class="container footer">
+    <button id="submitBtn" class="hidden">採点</button>
+    <button id="retryIncorrectBtn" class="hidden">不正解のみ再挑戦</button>
+    <button id="exportBookmarksBtn">ブックマーク書き出し</button>
+    <input id="importBookmarksFile" type="file" accept="application/json" hidden />
+    <button id="importBookmarksBtn">ブックマーク読み込み</button>
   </footer>
+
+  <script src="app.js" defer></script>
 </body>
 </html>
